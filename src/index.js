@@ -1,5 +1,7 @@
 import "../pages/index.css";
-import {initialCards} from './cards.js';
+import {initialCards} from './components/cards.js';
+import {enableValidation} from './components/validate.js';
+
 // @todo: Темплейт карточки
 const template = document.querySelector("#card-template");
 // @todo: DOM узлы
@@ -42,7 +44,7 @@ const btnCardSave = cardPopup.querySelector(".popup__button");
 btnCardOpen.addEventListener("click", () => openModal(cardPopup));
 btnCardClose.addEventListener("click", () => closeModal(cardPopup));
 // Добавления новых карточек пользователем
-const cardSave = cardPopup.querySelector(".popup__form");
+export const cardSave = cardPopup.querySelector(".popup__form");
 const cardName = cardPopup.querySelector(".popup__input_type_card-name");
 const cardUrl = cardPopup.querySelector(".popup__input_type_url");
 // Состояние кнопки до создания карточки
@@ -62,6 +64,7 @@ initialCards.forEach(function (elem) {
 // Функция создания карточки
 const popupImg = imagePopup.querySelector(".popup__image");
 const popupCaption = imagePopup.querySelector(".popup__caption");
+
 function createCard(name, link, isUserCard) {
   const item = template.content.cloneNode(true);
   let img = item.querySelector(".card__image");
@@ -115,70 +118,17 @@ profilePopup.addEventListener('submit', handleProfileFormSubmit)
 // Обработчик события закрытия окна редактирования профиля
 btnProfileClose.addEventListener("click", () => closeModal(profilePopup));
 
-// Функция перебора form
-function enableValidation() {
-  const formList = Array.from(document.querySelectorAll('.popup__form'));
-  formList.forEach((formElement) => {
-    setEventListeners(formElement);
-  })
-}
-enableValidation();
 
-// Функция перебора input-form
-function setEventListeners(formElement) {
-  const  inputList = Array.from(formElement.querySelectorAll('.popup__input'))
-  const buttonElement = formElement.querySelector('.popup__button'); 
-  if (formElement==cardSave) {
-    toggleButtonState(inputList, buttonElement);
-  }
-  inputList.forEach((inputElement) => {
-      inputElement.addEventListener('input', function () {
-        checkInputValidity(formElement, inputElement);
-        toggleButtonState(inputList, buttonElement);
-      });
-  });
-};
-
-// Функция показа ошибки валидации
-function showInputError(formElement, inputElement, errorMessage) {
-  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.add('popup__input_type_error');
-  errorElement.textContent = errorMessage;
-  errorElement.classList.add('popup__input-error_active');
-}
-// Функция скрытия ошибки валидации
-function hideInputError(formElement, inputElement,) {
-  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.remove('popup__input_type_error');
-  errorElement.classList.remove('popup__input-error_active');
-  errorElement.textContent = '';
+const validationSettings = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button-disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__input-error_active'
 }
 
-// Функция для проверки валидности формы
-const checkInputValidity = (formElement, inputElement) => {
-  if (!inputElement.validity.valid) {
-    showInputError(formElement, inputElement, inputElement.validationMessage);
-  } else {
-    hideInputError(formElement, inputElement);
-  }
-};
-
-// Функция проверки полей на валидность
-function hasInvalidInput(inputList) {
-  return inputList.some((inputElement) => {
-    return !inputElement.validity.valid;
-  });
-};
-// Функция выключения кнопки
-function toggleButtonState(inputList, buttonElement) {
-  if (hasInvalidInput(inputList)) {  // Если есть хотя бы одно невалидное поле
-    buttonElement.classList.add('popup__button-disabled');
-    buttonElement.disabled = true;
-  } else {  // Если все поля валидны
-    buttonElement.classList.remove('popup__button-disabled');
-    buttonElement.disabled = false;
-  }
-}
+enableValidation(validationSettings);
 
 // Функция закрытия popap через overlay
 const CloseByOverlay = (evt, popup) => {
