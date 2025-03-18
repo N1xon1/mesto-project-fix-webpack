@@ -1,4 +1,4 @@
-import {cardSave} from '../index.js'
+import {cardSave} from './index.js'
 
 // Функция перебора form
 function enableValidation(settings) {
