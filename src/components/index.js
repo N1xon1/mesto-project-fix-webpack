@@ -3,6 +3,11 @@ import { initialCards, createCard } from "./cards.js";
 import { enableValidation, toggleButtonState } from "./validate.js";
 import { openModal, closeModal, closeByEsc } from "./modal.js";
 
+import { getUser, getCards, updateUser, addCards} from './api.js'
+getCards().then(console.log);
+getUser().then(console.log);
+updateUser()
+addCards()
 // @todo: DOM узлы
 const appendCard = document.querySelector(".places__list");
 const profilePopup = document.querySelector(".popup_type_edit");
