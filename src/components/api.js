@@ -1,3 +1,4 @@
+import {titleProfilePopup, descripProfilePopup, cardName, cardUrl} from './index.js'; 
 const config = {
     baseUrl: 'https://nomoreparties.co/v1/apf-cohort-202',
     headers: {
@@ -36,15 +37,15 @@ export function getCards() {
 export function getUser() {
     return fetchData('users/me', 'GET');
 }
-
+// Обновление данных пользователя
 export async function updateUser() {
     try {
         const response = await fetch('https://nomoreparties.co/v1/apf-cohort-202/users/me', {
             headers: config.headers, 
             method: 'PATCH',
             body: JSON.stringify({
-                name: '12',
-                about: '123'
+                name: titleProfilePopup.value,
+                about: descripProfilePopup.value
               })
         });
 
@@ -53,15 +54,16 @@ export async function updateUser() {
         console.error('Ошибка', error);
     }
 }
-
+// Добавление новых карточек
 export async function addCards() {
     try {
         const response = await fetch('https://nomoreparties.co/v1/apf-cohort-202/cards', {
             headers: config.headers,
             method: 'POST',
             body: JSON.stringify({
-                name: 'Карточка',
-                link: 'https://pictures.s3.yandex.net/frontend-developer/car'
+                name: cardName.value,
+                link: cardUrl.value,
+            
               })
         })
         
@@ -69,5 +71,17 @@ export async function addCards() {
     } catch(error){
         console.error('Ошибка', error)
     }
-    
+}
+
+// Удаление карточек 
+export async function  deleteCards(cardId) {
+    try {
+        const response = await fetch(`https://nomoreparties.co/v1/apf-cohort-202/cards/${cardId}`, {
+            headers:config.headers,
+            method: 'DELETE'
+        })
+        return await handleResponse(response);
+    } catch(err) {
+        console.log('Ошибка', err)
+    }
 }

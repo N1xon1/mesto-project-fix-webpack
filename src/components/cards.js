@@ -7,47 +7,25 @@ import {
   openImagePopup,
 } from "./index.js";
 
-export const initialCards = [
-  {
-    name: "Архыз",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg",
-  },
-  {
-    name: "Челябинская область",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg",
-  },
-  {
-    name: "Иваново",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg",
-  },
-  {
-    name: "Камчатка",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg",
-  },
-  {
-    name: "Холмогорский район",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg",
-  },
-  {
-    name: "Байкал",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg",
-  },
-];
+
+
 
 // @todo: Темплейт карточки
 const template = document.querySelector("#card-template");
 
 const imagePopup = document.querySelector(".popup_type_image");
 
-function createCard(name, link, isUserCard) {
+function createCard(name, link, isUserCard, likes, authorCardId) {
   const item = template.content.cloneNode(true);
+  const btnDelete = item.querySelector('.card__delete-button');
+  console.log(authorCardId)
   let img = item.querySelector(".card__image");
   let title = item.querySelector(".card__title");
-
+  let quantityLikes = item.querySelector('.card__quantity-likes');
   // Установка атрибутов изображения и текста
   setImageAttributes(img, link, name);
   title.textContent = name;
-
+  quantityLikes.textContent = likes.length;
   // Обработчик события открытия поп-апа с картинкой
   img.addEventListener("click", () => openImagePopup(link, name));
 
@@ -57,7 +35,7 @@ function createCard(name, link, isUserCard) {
 
   // Обработчик лайка
   const btnCardLikes = item.querySelector(".card__like-button");
-  btnCardLikes.addEventListener("click", handleLikeButtonClick);
+  btnCardLikes.addEventListener("click", (evt) => handleLikeButtonClick(evt, likes, quantityLikes));
 
   // Обработчик удаления карточки
   const btnCardDelete = item.querySelector(".card__delete-button");

@@ -3,11 +3,11 @@ import { initialCards, createCard } from "./cards.js";
 import { enableValidation, toggleButtonState } from "./validate.js";
 import { openModal, closeModal, closeByEsc } from "./modal.js";
 
-import { getUser, getCards, updateUser, addCards} from './api.js'
+import { getUser, getCards, updateUser, addCards } from './api.js'
 getCards().then(console.log);
 getUser().then(console.log);
-updateUser()
-addCards()
+// updateUser()
+// addCards()
 // @todo: DOM узлы
 const appendCard = document.querySelector(".places__list");
 const profilePopup = document.querySelector(".popup_type_edit");
@@ -15,12 +15,13 @@ const cardPopup = document.querySelector(".popup_type_new-card");
 const imagePopup = document.querySelector(".popup_type_image");
 const btnProfileOpen = document.querySelector(".profile__edit-button");
 const btnProfileClose = profilePopup.querySelector(".popup__close");
-
-const titleProfilePopup = profilePopup.querySelector(".popup__input_type_name");
-const titleProfile = document.querySelector(".profile__title");
-const descripProfilePopup = profilePopup.querySelector(
+const profileImage = document.querySelector('.profile__image');
+export const titleProfilePopup = profilePopup.querySelector(".popup__input_type_name");
+export const descripProfilePopup = profilePopup.querySelector(
   ".popup__input_type_description"
 );
+
+const titleProfile = document.querySelector(".profile__title");
 const descripProfile = document.querySelector(".profile__description");
 const profileFormElement = profilePopup.querySelector(".popup__form");
 const btnProfileSave = profilePopup.querySelector(".popup__button");
@@ -48,8 +49,18 @@ function openImagePopup(link, name) {
 }
 
 // Функция для обработки лайков
-function handleLikeButtonClick(evt) {
+function handleLikeButtonClick(evt, likes, quantityLikes) {
   evt.currentTarget.classList.toggle("card__like-button_is-active");
+   
+  // Добавляем или удаляем лайк
+   if (evt.currentTarget.classList.contains("card__like-button_is-active")) {
+    likes.push("1"); // Добавляем лайк
+  } else {
+    likes.pop(); // Удаляем лайк
+  }
+
+  // Обновляем количество лайков
+  quantityLikes.textContent = likes.length;
 }
 
 // Функция для удаления карточки
@@ -71,7 +82,9 @@ const cardUrl = cardPopup.querySelector(".popup__input_type_url");
 // Состояние кнопки до создания карточки
 function handleCardFormSubmit(evt) {
   evt.preventDefault();
-  createCard(cardName.value, cardUrl.value, true);
+  let likes = [];
+  createCard(cardName.value, cardUrl.value, true, likes);
+  addCards();
   cardSave.reset();
   closeModal(cardPopup);
   toggleButtonState(
@@ -82,17 +95,31 @@ function handleCardFormSubmit(evt) {
 }
 cardSave.addEventListener("submit", handleCardFormSubmit);
 
-// Перебор массива с данными
-initialCards.forEach(function (elem) {
-  createCard(elem.name, elem.link, false);
-});
+// Создания карточек с сервера
+(async () => {
+  const initialCards = await getCards(); // Ожидаем результат
+
+  // Перебор массива с данными
+  initialCards.forEach(function (elem) {
+    createCard(elem.name, elem.link, false, elem.likes, elem.owner._id);
+  });
+})();
 // Функция создания карточки
 const popupImg = imagePopup.querySelector(".popup__image");
 const popupCaption = imagePopup.querySelector(".popup__caption");
 
 // Добавления текста по умолчания внутри формы изменений профиля
-titleProfilePopup.value = titleProfile.textContent;
-descripProfilePopup.value = descripProfile.textContent;
+(async () => {
+  const userUpdate = await getUser();
+  
+  const userId = userUpdate._id;
+  titleProfile.textContent = userUpdate.name;
+  descripProfile.textContent = userUpdate.about;
+  titleProfilePopup.value = userUpdate.name;
+  descripProfilePopup.value = userUpdate.about;
+  profileImage.style.backgroundImage = `url('${userUpdate.avatar}')`;
+})();
+
 // Обработчик события открытия окна редактирования профиля
 btnProfileOpen.addEventListener("click", () => openModal(profilePopup));
 
@@ -102,6 +129,7 @@ function handleProfileFormSubmit(evt) {
   titleProfile.textContent = titleProfilePopup.value;
   descripProfile.textContent = descripProfilePopup.value;
   closeModal(profilePopup);
+  updateUser();
 }
 profilePopup.addEventListener("submit", handleProfileFormSubmit);
 // Обработчик события закрытия окна редактирования профиля
@@ -137,4 +165,6 @@ export {
   handleLikeButtonClick,
   handleDeleteButtonClick,
   openImagePopup,
+  cardName,
+  cardUrl
 };
