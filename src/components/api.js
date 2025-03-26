@@ -74,7 +74,7 @@ export async function addCards() {
 }
 
 // Удаление карточек 
-export async function  deleteCards(cardId) {
+export async function deleteCards(cardId) {
     try {
         const response = await fetch(`https://nomoreparties.co/v1/apf-cohort-202/cards/${cardId}`, {
             headers:config.headers,
@@ -84,4 +84,24 @@ export async function  deleteCards(cardId) {
     } catch(err) {
         console.log('Ошибка', err)
     }
+}
+
+// Добавления лайка карточки
+async function handleCardLike(cardId, method) {
+    try {
+        const response = await fetch(`https://nomoreparties.co/v1/apf-cohort-202/cards/likes/${cardId}`, {
+            headers:config.headers,
+            method: method
+        })
+        return await handleResponse(response)
+        
+    } catch(err) {console.log('Ошибка', err)}
+}
+
+export function addLikes(cardId, method) {
+    return handleCardLike(cardId, method)
+}
+
+export function removeLikes(cardId, method) {
+    return handleCardLike(cardId, method)
 }

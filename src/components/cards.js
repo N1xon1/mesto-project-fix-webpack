@@ -6,19 +6,15 @@ import {
   handleDeleteButtonClick,
   openImagePopup,
 } from "./index.js";
-
-
-
+// import { getUser, getCards, updateUser, addCards, deleteCards } from './api.js';
 
 // @todo: Темплейт карточки
 const template = document.querySelector("#card-template");
 
 const imagePopup = document.querySelector(".popup_type_image");
 
-function createCard(name, link, isUserCard, likes, authorCardId) {
+function createCard(name, link, isUserCard, likes, cardId) {
   const item = template.content.cloneNode(true);
-  const btnDelete = item.querySelector('.card__delete-button');
-  console.log(authorCardId)
   let img = item.querySelector(".card__image");
   let title = item.querySelector(".card__title");
   let quantityLikes = item.querySelector('.card__quantity-likes');
@@ -33,18 +29,17 @@ function createCard(name, link, isUserCard, likes, authorCardId) {
   const btnImgClose = imagePopup.querySelector(".popup__close");
   btnImgClose.addEventListener("click", () => closeModal(imagePopup));
 
-  // Обработчик лайка
+  // Обработaчик лайка
   const btnCardLikes = item.querySelector(".card__like-button");
-  btnCardLikes.addEventListener("click", (evt) => handleLikeButtonClick(evt, likes, quantityLikes));
+  btnCardLikes.addEventListener("click", (evt) => handleLikeButtonClick(evt, likes, quantityLikes, cardId));
 
-  // Обработчик удаления карточки
+  // // Обработчик удаления карточки
   const btnCardDelete = item.querySelector(".card__delete-button");
-  btnCardDelete.addEventListener("click", () =>
-    handleDeleteButtonClick(btnCardDelete)
-  );
-
   // Размещение карточки в DOM
   appendCardToDOM(item, isUserCard);
+
+  return { item, btnCardDelete }; 
 }
 
-export { createCard };
+
+export {createCard};

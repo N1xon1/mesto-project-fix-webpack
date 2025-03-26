@@ -1,13 +1,12 @@
 import "../pages/index.css";
-import { initialCards, createCard } from "./cards.js";
+import {createCard } from "./cards.js";
 import { enableValidation, toggleButtonState } from "./validate.js";
 import { openModal, closeModal, closeByEsc } from "./modal.js";
 
-import { getUser, getCards, updateUser, addCards } from './api.js'
+import { getUser, getCards, updateUser, addCards, deleteCards, addLikes, removeLikes} from './api.js'
 getCards().then(console.log);
 getUser().then(console.log);
-// updateUser()
-// addCards()
+
 // @todo: DOM узлы
 const appendCard = document.querySelector(".places__list");
 const profilePopup = document.querySelector(".popup_type_edit");
@@ -49,14 +48,16 @@ function openImagePopup(link, name) {
 }
 
 // Функция для обработки лайков
-function handleLikeButtonClick(evt, likes, quantityLikes) {
+function handleLikeButtonClick(evt, likes, quantityLikes, cardId) {
   evt.currentTarget.classList.toggle("card__like-button_is-active");
    
   // Добавляем или удаляем лайк
    if (evt.currentTarget.classList.contains("card__like-button_is-active")) {
-    likes.push("1"); // Добавляем лайк
+    likes.push("1");
+    addLikes(cardId, 'PUT');  // Добавляем лайк
   } else {
-    likes.pop(); // Удаляем лайк
+    likes.pop();
+    removeLikes(cardId, 'DELETE'); // Удаляем лайк
   }
 
   // Обновляем количество лайков
@@ -64,9 +65,10 @@ function handleLikeButtonClick(evt, likes, quantityLikes) {
 }
 
 // Функция для удаления карточки
-function handleDeleteButtonClick(button) {
+function handleDeleteButtonClick(button, cardId) {
   const card = button.closest(".places__item");
   card.remove();
+  deleteCards(cardId);
 }
 
 // Открытие и закрытие формы для добавления карточек
@@ -75,35 +77,103 @@ const btnCardClose = cardPopup.querySelector(".popup__close");
 const btnCardSave = cardPopup.querySelector(".popup__button");
 btnCardOpen.addEventListener("click", () => openModal(cardPopup));
 btnCardClose.addEventListener("click", () => closeModal(cardPopup));
+
 // Добавления новых карточек пользователем
 export const cardSave = cardPopup.querySelector(".popup__form");
 const cardName = cardPopup.querySelector(".popup__input_type_card-name");
 const cardUrl = cardPopup.querySelector(".popup__input_type_url");
-// Состояние кнопки до создания карточки
-function handleCardFormSubmit(evt) {
+
+// Отправка формы для обработки карточки
+async function handleCardFormSubmit(evt) {
   evt.preventDefault();
-  let likes = [];
-  createCard(cardName.value, cardUrl.value, true, likes);
-  addCards();
-  cardSave.reset();
-  closeModal(cardPopup);
-  toggleButtonState(
-    Array.from(cardPopup.querySelectorAll(".popup__input")),
-    btnCardSave,
-    validationSettings
-  );
+    //  Получаем текущего пользователя
+    const userUpdate = await getUser();
+    
+    //  Создаем объект новой карточки
+    const newCardData = {
+      name: cardName.value,
+      link: cardUrl.value,
+      likes: []
+    };
+
+    //  Отправляем карточку на сервер
+    const addedCard = await addCards(newCardData);
+    
+    // Создаем DOM-элемент карточки
+    const { item, btnCardDelete } = createCard(
+      addedCard.name, 
+      addedCard.link, 
+      true, 
+      addedCard.likes,
+    );
+
+    // Добавляем карточку в начало списка
+    appendCard.prepend(item);
+
+    //  Если карточка принадлежит текущему пользователю - активируем удаление
+    if (addedCard.owner._id === userUpdate._id) {
+      btnCardDelete.classList.remove("disabled-button");
+      btnCardDelete.addEventListener("click", () => {
+        handleDeleteButtonClick(btnCardDelete, addedCard._id);
+      });
+    } else {
+      btnCardDelete.classList.add("disabled-button");
+    }
+
+    // Очищаем форму и закрываем попап
+    cardSave.reset();
+    closeModal(cardPopup);
+    
+    //  Обновляем состояние кнопки
+    toggleButtonState(
+      Array.from(cardPopup.querySelectorAll(".popup__input")),
+      btnCardSave,
+      validationSettings
+    );
 }
 cardSave.addEventListener("submit", handleCardFormSubmit);
+// Получения iD пользователя
+// let userId;
+// async function getUserId(callback) {
+//   const userUpdate = await getUser();
+//   userId = userUpdate._id;
+//   if (callback) callback(userId);
+// };
+// getUserId((id)=> {
+//   console.log("User ID получен:", id); 
+// });
 
-// Создания карточек с сервера
+
+// Создания карточек с сервера и удаления карточки
 (async () => {
-  const initialCards = await getCards(); // Ожидаем результат
+  const initialCards = await getCards();
+  const userUpdate = await getUser();
 
-  // Перебор массива с данными
-  initialCards.forEach(function (elem) {
-    createCard(elem.name, elem.link, false, elem.likes, elem.owner._id);
+  userId = userUpdate._id;
+
+  initialCards.forEach((card) => {
+    const { item, btnCardDelete } = createCard(card.name, card.link, false, card.likes, card._id);
+
+    appendCard.append(item);
+
+    // (card.likes.forEach((el)=>{
+    //   console.log(el._id, card._id)
+    // }))
+
+    // Если карточка принадлежит текущему пользователю — активируем удаление
+    if (card.owner._id === userUpdate._id) {
+      btnCardDelete.classList.remove("disabled-button");
+      btnCardDelete.addEventListener("click", () => {
+        handleDeleteButtonClick(btnCardDelete, card._id);
+        console.log(card._id)
+      });
+    } else {
+      btnCardDelete.classList.add("disabled-button");
+    }
   });
+
 })();
+
 // Функция создания карточки
 const popupImg = imagePopup.querySelector(".popup__image");
 const popupCaption = imagePopup.querySelector(".popup__caption");
@@ -112,7 +182,7 @@ const popupCaption = imagePopup.querySelector(".popup__caption");
 (async () => {
   const userUpdate = await getUser();
   
-  const userId = userUpdate._id;
+  // userId = userUpdate._id;
   titleProfile.textContent = userUpdate.name;
   descripProfile.textContent = userUpdate.about;
   titleProfilePopup.value = userUpdate.name;
