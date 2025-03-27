@@ -18,6 +18,13 @@
   transition: 0.3s;
 }
 
+.disabled-button {
+  pointer-events: none; /* Блокирует клики */
+  cursor: not-allowed;  /* Курсор "недоступно" */
+  opacity: 0;         
+
+}
+
 .card__delete-button:hover {
   opacity: 0.6;
 }

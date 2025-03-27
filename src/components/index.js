@@ -3,7 +3,7 @@ import {createCard } from "./cards.js";
 import { enableValidation, toggleButtonState } from "./validate.js";
 import { openModal, closeModal, closeByEsc } from "./modal.js";
 
-import { getUser, getCards, updateUser, addCards, deleteCards, addLikes, removeLikes} from './api.js'
+import { getUser, getCards, updateUser, addCards, deleteCards, addLikes, removeLikes, updateUserAvatar} from './api.js'
 getCards().then(console.log);
 getUser().then(console.log);
 
@@ -149,8 +149,6 @@ cardSave.addEventListener("submit", handleCardFormSubmit);
   const initialCards = await getCards();
   const userUpdate = await getUser();
 
-  userId = userUpdate._id;
-
   initialCards.forEach((card) => {
     const { item, btnCardDelete } = createCard(card.name, card.link, false, card.likes, card._id);
 
@@ -182,11 +180,11 @@ const popupCaption = imagePopup.querySelector(".popup__caption");
 (async () => {
   const userUpdate = await getUser();
   
-  // userId = userUpdate._id;
   titleProfile.textContent = userUpdate.name;
   descripProfile.textContent = userUpdate.about;
   titleProfilePopup.value = userUpdate.name;
   descripProfilePopup.value = userUpdate.about;
+  // добавляем автар пользователя, полученный с сервера
   profileImage.style.backgroundImage = `url('${userUpdate.avatar}')`;
 })();
 
@@ -222,12 +220,33 @@ const CloseByOverlay = (evt, popup) => {
     closeModal(popup);
   }
 };
+// Обработчики открытия и закрытия popap смены аватара пользователя
+const btnUserImageOpen = document.querySelector('.profile__image');
+const updateAvatarPopup = document.querySelector('.popup_type_update_avatar');
+const btnUserImageClose = updateAvatarPopup.querySelector('.popup__close');
+btnUserImageOpen.addEventListener('click', () => openModal(updateAvatarPopup));
+btnUserImageClose.addEventListener("click", () => closeModal(updateAvatarPopup));
 
+// Обработчики сохранения popap смены аватара пользователя
+updateAvatarPopup.addEventListener('submit', handleupdateAvatarSubmit);
+
+// Функция созранения popap смены аватара пользователя
+const inputAvatarPopup = updateAvatarPopup.querySelector('.popup__input');
+const updateAvatar = updateAvatarPopup.querySelector('.popup__form')
+function handleupdateAvatarSubmit(evt) {
+  evt.preventDefault();
+  updateUserAvatar(inputAvatarPopup.value);
+  profileImage.style.backgroundImage = `url('${inputAvatarPopup.value}')`;
+  closeModal(updateAvatarPopup);
+  updateAvatar.reset()
+}
+
+// Обработчики события закрытия через overlay
 cardPopup.addEventListener("click", (evt) => CloseByOverlay(evt, cardPopup));
-profilePopup.addEventListener("click", (evt) =>
-  CloseByOverlay(evt, profilePopup)
-);
+profilePopup.addEventListener("click", (evt) => CloseByOverlay(evt, profilePopup));
 imagePopup.addEventListener("click", (evt) => CloseByOverlay(evt, imagePopup));
+updateAvatarPopup.addEventListener('click', (evt) => CloseByOverlay(evt,updateAvatarPopup))
+
 
 export {
   setImageAttributes,

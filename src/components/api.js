@@ -105,3 +105,19 @@ export function addLikes(cardId, method) {
 export function removeLikes(cardId, method) {
     return handleCardLike(cardId, method)
 }
+
+// Обновление аватара пользователя
+ export async function updateUserAvatar(avatar) {
+    try {
+        const response = await fetch(`https://nomoreparties.co/v1/apf-cohort-202/users/me/avatar`, {
+            headers:config.headers,
+            method:'PATCH',
+            body: JSON.stringify({
+                avatar: avatar
+              })
+        })
+        return await handleResponse(response)
+
+    }catch(err) {console.log('Ошибка', err)}
+    
+ }
