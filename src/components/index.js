@@ -68,8 +68,8 @@ async function handleLikeButtonClick(evt, cardId, quantityLikesElement) {
     btnLike.classList.toggle("card__like-button_is-active");
     quantityLikesElement.textContent = updatedCard.likes.length;
     
-  } catch (error) {
-    console.error("Ошибка при обновлении лайка:", error);
+  } catch (err) {
+    console.error("Ошибка при обновлении лайка:", err);
     btnLike.classList.toggle("card__like-button_is-active", isLiked);
   } finally {
     btnLike.disabled = false;
@@ -212,7 +212,7 @@ async function handleProfileFormSubmit(evt) {
     titleProfile.textContent = titleProfilePopup.value;
     descripProfile.textContent = descripProfilePopup.value;
     closeModal(profilePopup);
-} catch(err) {console.error("Ошибка при создании карточки:", error)
+} catch(err) {console.error("Ошибка при создании карточки:", err)
 } finally {
     submitButton.textContent = originalText;
     submitButton.disabled = false;
