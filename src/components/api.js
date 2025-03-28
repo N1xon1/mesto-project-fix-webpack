@@ -1,4 +1,5 @@
 import {titleProfilePopup, descripProfilePopup, cardName, cardUrl} from './index.js'; 
+// конфиг пользователя
 const config = {
     baseUrl: 'https://nomoreparties.co/v1/apf-cohort-202',
     headers: {
@@ -13,9 +14,9 @@ async function handleResponse(response) {
     }
     return await response.json();
 }
-
 // Универсальная функция для запросов
 async function fetchData(endpoint, method) {
+    
     try {
         const response = await fetch(`${config.baseUrl}/${endpoint}`, {
             headers: config.headers,
@@ -25,7 +26,7 @@ async function fetchData(endpoint, method) {
         return await handleResponse(response);
     } catch (error) {
         console.error('Ошибка:', error);
-    }
+    } 
 }
 
 // Получение карточек
@@ -87,7 +88,7 @@ export async function deleteCards(cardId) {
 }
 
 // Добавления лайка карточки
-async function handleCardLike(cardId, method) {
+export async function handleCardLike(cardId, method) {
     try {
         const response = await fetch(`https://nomoreparties.co/v1/apf-cohort-202/cards/likes/${cardId}`, {
             headers:config.headers,
@@ -95,15 +96,17 @@ async function handleCardLike(cardId, method) {
         })
         return await handleResponse(response)
         
-    } catch(err) {console.log('Ошибка', err)}
+    } catch(err) {console.log('Ошибка', err);
+        throw err;
+    }
 }
 
-export function addLikes(cardId, method) {
-    return handleCardLike(cardId, method)
+export function addLikes(cardId) {
+    return handleCardLike(cardId, 'PUT');
 }
 
-export function removeLikes(cardId, method) {
-    return handleCardLike(cardId, method)
+export function removeLikes(cardId) {
+    return handleCardLike(cardId, 'DELETE');
 }
 
 // Обновление аватара пользователя
